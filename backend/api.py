@@ -45,7 +45,9 @@ class WrongOrthodromyNodesCount(ApiException):
 # endregion
 
 # region Point
-Entity = TypeVar('Entity', bound='Point')
+Entity = TypeVar("Entity", bound="Point")
+
+
 class Point:
     _MAX_LAT_ANGLE = 180
     _MAX_LAT_MERCATOR = 20037508.34
@@ -91,13 +93,13 @@ class Point:
         else:
             max_lat = float(self._MAX_LAT_ANGLE)
         self._lat = (self._lat + max_lat) % (max_lat * 2) - max_lat
-    
+
     def __str__(self) -> str:
         return "lat: {0}; lng: {1}".format(self.getLat(), self.getLng())
-    
+
     def reverse(self) -> None:
         self._lat, self._lng = self._lng, self._lat
-    
+
     def clone(self: Entity) -> Entity:
         clone = self.__class__(self.getLat(), self.getLng(), self.getCS())
         return clone
@@ -160,7 +162,7 @@ class Orthodromy:
             for point in points:
                 self._data.append(Point(point[0], point[1], WGS84))
             self._data.append(self._end.clone())
-    
+
     def __reversePointsData(self) -> None:
         self._begin.reverse()
         self._end.reverse()
@@ -175,5 +177,6 @@ class Orthodromy:
 
     def getPointList(self) -> List[Point]:
         return self._data
+
 
 # endregion

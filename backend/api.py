@@ -1,5 +1,5 @@
 from pyproj import CRS, Transformer
-from typing import List
+from typing import List, TypeVar
 
 # region EPSG
 EPSG_CODES = [4326, 4284, 3857]
@@ -45,8 +45,7 @@ class WrongOrthodromyNodesCount(ApiException):
 # endregion
 
 # region Point
-
-
+Entity = TypeVar('Entity', bound='Point')
 class Point:
     _MAX_LAT_ANGLE = 180
     _MAX_LAT_MERCATOR = 20037508.34
@@ -95,6 +94,13 @@ class Point:
     
     def __str__(self) -> str:
         return "lat: {0}; lng: {1}".format(self.getLat(), self.getLng())
+    
+    def reverse(self) -> None:
+        self._lat, self._lng = self._lng, self._lat
+    
+    def clone(self: Entity) -> Entity:
+        clone = self.__class__(self.getLat(), self.getLng(), self.getCS())
+        return clone
 
 
 # endregion
@@ -107,8 +113,8 @@ class Orthodromy:
             raise DifferentEPGS
         if nodes_count < 0:
             raise WrongOrthodromyNodesCount
-        self._begin = begin
-        self._end = end
+        self._begin = begin.clone()
+        self._end = end.clone()
         self._nodes_count = nodes_count
         self._cs = begin.getCS()
         self._data: List[Point] = []
@@ -119,6 +125,7 @@ class Orthodromy:
             self._data.append(end)
 
     def __calculate(self) -> None:
+        self.__reversePointsData()
         if self._cs == WGS84:
             self.__calculateWGS84()
         else:
@@ -126,6 +133,7 @@ class Orthodromy:
             self._end.changeCS(WGS84)
             self.__calculateWGS84()
             self.changeCS(self._cs)
+        self.__reversePointsData()
 
     def changeCS(self, cs: str) -> None:
         if cs not in EPSG:
@@ -141,7 +149,7 @@ class Orthodromy:
         if geoid is None:
             raise RuntimeError("Get geoid error")
         else:
-            self._data.append(self._begin)
+            self._data.append(self._begin.clone())
             points = geoid.npts(
                 self._begin.getLat(),
                 self._begin.getLng(),
@@ -151,7 +159,13 @@ class Orthodromy:
             )
             for point in points:
                 self._data.append(Point(point[0], point[1], WGS84))
-            self._data.append(self._end)
+            self._data.append(self._end.clone())
+    
+    def __reversePointsData(self) -> None:
+        self._begin.reverse()
+        self._end.reverse()
+        for point in self._data:
+            point.reverse()
 
     def getNodesCount(self) -> int:
         return self._nodes_count

@@ -18,7 +18,7 @@ class Configuration:
 
 
 class Folders:
-    STATIC_FOLDER = "../frontend/dist/"
+    STATIC_FOLDER = "../frontend/build/"
 
 
 # endregion

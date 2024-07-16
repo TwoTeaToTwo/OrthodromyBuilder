@@ -92,6 +92,9 @@ class Point:
         else:
             max_lat = float(self._MAX_LAT_ANGLE)
         self._lat = (self._lat + max_lat) % (max_lat * 2) - max_lat
+    
+    def __str__(self) -> str:
+        return "lat: {0}; lng: {1}".format(self.getLat(), self.getLng())
 
 
 # endregion
@@ -158,6 +161,5 @@ class Orthodromy:
 
     def getPointList(self) -> List[Point]:
         return self._data
-
 
 # endregion

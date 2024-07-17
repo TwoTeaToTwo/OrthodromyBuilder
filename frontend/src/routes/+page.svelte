@@ -41,7 +41,7 @@
 	<title>Построение ортодрома</title>
 </svelte:head>
 
-<Map bind:points bind:point1 bind:point2 bind:chosingPointState/>
+<Map bind:points bind:point1 bind:point2 bind:chosingPointState bind:cs={current_epsg}/>
 <Panel bind:point1 bind:point2 bind:chosingPointState bind:polyCount {epsg} bind:current_epsg on:update={update}/>
 
 <style>

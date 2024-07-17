@@ -1,5 +1,8 @@
 <script lang="ts">
 	import L, { type LeafletMouseEvent } from 'leaflet';
+	import * as proj4x from 'proj4';
+	const Proj4js = (proj4x as any).default;
+
 	import pinIcon from "$lib/images/pin.png";
 
 	import { ChosePointState } from './enums';
@@ -9,6 +12,7 @@
 	export let point2: Point;
 	export let points: Point[];
 	export let chosingPointState: ChosePointState;
+	export let cs: string;
 
 	let map: L.Map | null;
 
@@ -26,12 +30,16 @@
 
 	let tileProviders = new Map<string, L.TileLayer>();
 
+	const WGS84 = "EPSG:4326";
+	const sk72 = "EPSG:4284";
+	const Mercator = "EPSG:3857";
+
 	function onMapClick(e: LeafletMouseEvent) {
 		if (chosingPointState === ChosePointState.ChosingPoint1)
-			point1 = [e.latlng.lat, e.latlng.lng];
+			point1 = fromWSG84ToCustom([e.latlng.lat, e.latlng.lng], cs);
 		
 		if (chosingPointState === ChosePointState.ChosingPoint2)
-			point2 = [e.latlng.lat, e.latlng.lng];
+			point2 = fromWSG84ToCustom([e.latlng.lat, e.latlng.lng], cs);
 
 		chosingPointState = ChosePointState.Standby;
 	}
@@ -109,12 +117,30 @@
 			}
 		}
 	}
+	
+	function fromCustomToWSG84(point: Point, cs: string) {
+		let src = new Proj4js.Proj(cs);
+		let dst = new Proj4js.Proj(WGS84);
+		let new_point = new Proj4js.toPoint(point);
+		Proj4js.transform(src, dst, new_point);
+		let res_point: Point = [new_point.x, new_point.y];
+		return res_point;
+	}
+
+	function fromWSG84ToCustom(point: Point, cs: string){
+		let src = new Proj4js.Proj(WGS84);
+		let dst = new Proj4js.Proj(cs);
+		let new_point = new Proj4js.toPoint(point);
+		Proj4js.transform(src, dst, new_point);
+		let res_point: Point = [new_point.x, new_point.y];
+		return res_point;
+	}
 
 	$: if (point1 && point2) {
 		
 		pinLayer.clearLayers()
-		L.marker(point1, { icon: pin }).addTo(pinLayer);
-		L.marker(point2, { icon: pin }).addTo(pinLayer);
+		L.marker(fromCustomToWSG84(point1, cs), { icon: pin }).addTo(pinLayer);
+		L.marker(fromCustomToWSG84(point2, cs), { icon: pin }).addTo(pinLayer);
 	}
 
 	$: if (map && points) {
@@ -123,8 +149,10 @@
 		const polylineOptions: L.PolylineOptions = {
 			color: '#E4E'
 		}
+		points.forEach((value) => fromCustomToWSG84(value, cs));
 		L.polyline(points, polylineOptions).addTo(polyLineLayer);
 	}
+	
 </script>
 
 

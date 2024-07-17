@@ -1,7 +1,5 @@
 <script lang="ts">
 	import L, { type LeafletMouseEvent } from 'leaflet';
-	import * as proj4x from 'proj4';
-	const Proj4js = (proj4x as any).default;
 
 	import pinIcon from "$lib/images/pin.png";
 
@@ -33,13 +31,14 @@
 	const WGS84 = "EPSG:4326";
 	const sk72 = "EPSG:4284";
 	const Mercator = "EPSG:3857";
+	const defaultEPSG = WGS84;
 
 	function onMapClick(e: LeafletMouseEvent) {
 		if (chosingPointState === ChosePointState.ChosingPoint1)
-			point1 = fromWSG84ToCustom([e.latlng.lat, e.latlng.lng], cs);
+			point1 = fromWSG84ToMercator([e.latlng.lat, e.latlng.lng], cs);
 		
 		if (chosingPointState === ChosePointState.ChosingPoint2)
-			point2 = fromWSG84ToCustom([e.latlng.lat, e.latlng.lng], cs);
+			point2 = fromWSG84ToMercator([e.latlng.lat, e.latlng.lng], cs);
 
 		chosingPointState = ChosePointState.Standby;
 	}
@@ -118,29 +117,32 @@
 		}
 	}
 	
-	function fromCustomToWSG84(point: Point, cs: string) {
-		let src = new Proj4js.Proj(cs);
-		let dst = new Proj4js.Proj(WGS84);
-		let new_point = new Proj4js.toPoint(point);
-		Proj4js.transform(src, dst, new_point);
-		let res_point: Point = [new_point.x, new_point.y];
+	function fromMercatorToWSG84(point: Point, cs: string) {
+		let res_point: Point = point;
+		if (cs != defaultEPSG)
+		{
+			let tmp = L.CRS.EPSG3857.unproject(L.point(point[0], point[1]));
+			res_point = [tmp.lat, tmp.lng];
+		}
+
 		return res_point;
 	}
 
-	function fromWSG84ToCustom(point: Point, cs: string){
-		let src = new Proj4js.Proj(WGS84);
-		let dst = new Proj4js.Proj(cs);
-		let new_point = new Proj4js.toPoint(point);
-		Proj4js.transform(src, dst, new_point);
-		let res_point: Point = [new_point.x, new_point.y];
+	function fromWSG84ToMercator(point: Point, cs: string){
+		let res_point: Point = point;
+		if (cs != defaultEPSG)
+		{
+			let tmp = L.CRS.EPSG3857.project(new L.LatLng(point[0], point[1]));
+			res_point = [tmp.x, tmp.y];
+		}
 		return res_point;
 	}
 
 	$: if (point1 && point2) {
 		
 		pinLayer.clearLayers()
-		L.marker(fromCustomToWSG84(point1, cs), { icon: pin }).addTo(pinLayer);
-		L.marker(fromCustomToWSG84(point2, cs), { icon: pin }).addTo(pinLayer);
+		L.marker(fromMercatorToWSG84(point1, cs), { icon: pin }).addTo(pinLayer);
+		L.marker(fromMercatorToWSG84(point2, cs), { icon: pin }).addTo(pinLayer);
 	}
 
 	$: if (map && points) {
@@ -149,7 +151,7 @@
 		const polylineOptions: L.PolylineOptions = {
 			color: '#E4E'
 		}
-		points.forEach((value) => fromCustomToWSG84(value, cs));
+		points = points.map((value) => fromMercatorToWSG84(value, cs));
 		L.polyline(points, polylineOptions).addTo(polyLineLayer);
 	}
 	

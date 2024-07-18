@@ -139,7 +139,6 @@
 	}
 
 	$: if (point1 && point2) {
-		
 		pinLayer.clearLayers()
 		L.marker(fromMercatorToWSG84(point1, cs), { icon: pin }).addTo(pinLayer);
 		L.marker(fromMercatorToWSG84(point2, cs), { icon: pin }).addTo(pinLayer);
@@ -151,7 +150,9 @@
 		const polylineOptions: L.PolylineOptions = {
 			color: '#E4E'
 		}
+		console.log(points);
 		points = points.map((value) => fromMercatorToWSG84(value, cs));
+		console.log(points);
 		L.polyline(points, polylineOptions).addTo(polyLineLayer);
 	}
 	

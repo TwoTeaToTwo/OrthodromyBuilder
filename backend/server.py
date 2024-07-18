@@ -2,7 +2,7 @@ from flask import Flask, request, abort, send_from_directory, Response
 import re
 
 
-from api import Point, EPSG, UnknownEPGS, Orthodromy
+from geography import Point, EPSG, UnknownEPGS, Orthodromy
 
 
 # region Configuration
@@ -110,6 +110,11 @@ def request_orthodromy() -> str:
         begin = get_normolised_point(point1_s, cs)
         end = get_normolised_point(point2_s, cs)
         orthodromy = Orthodromy(begin, end, count)
+        #"EPSG:3857" "EPSG:4326"
+        orthodromy.changeCS("EPSG:4326")
+        print(orthodromy_to_linestring(orthodromy))
+        orthodromy.changeCS(cs)
+        print(orthodromy_to_linestring(orthodromy))
         return orthodromy_to_linestring(orthodromy)
     except KeyError:
         abort(400, description="missing args")

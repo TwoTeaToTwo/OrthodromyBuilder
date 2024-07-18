@@ -22,7 +22,7 @@
 	const update = async () => 
 		points = await requestPoints(point1, point2, current_epsg, polyCount);
 
-	onMount(update);
+	//onMount(update);
 
 	function getEPSG()
 	{

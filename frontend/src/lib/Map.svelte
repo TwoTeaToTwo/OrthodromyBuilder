@@ -31,14 +31,25 @@
 	const WGS84 = "EPSG:4326";
 	const sk72 = "EPSG:4284";
 	const Mercator = "EPSG:3857";
-	const defaultEPSG = WGS84;
 
 	function onMapClick(e: LeafletMouseEvent) {
-		if (chosingPointState === ChosePointState.ChosingPoint1)
-			point1 = fromWSG84ToMercator([e.latlng.lat, e.latlng.lng], cs);
+		if (chosingPointState === ChosePointState.ChosingPoint1) {
+			if (cs == Mercator) {
+				point1 = fromWSG84ToMercator([e.latlng.lat, e.latlng.lng]);
+			}
+			if (cs == WGS84) {
+				point1 = [e.latlng.lat, e.latlng.lng];
+			}
+		}
 		
-		if (chosingPointState === ChosePointState.ChosingPoint2)
-			point2 = fromWSG84ToMercator([e.latlng.lat, e.latlng.lng], cs);
+		if (chosingPointState === ChosePointState.ChosingPoint2) {
+			if (cs == Mercator) {
+				point2 = fromWSG84ToMercator([e.latlng.lat, e.latlng.lng]);
+			}
+			if (cs == WGS84) {
+				point2 = [e.latlng.lat, e.latlng.lng];
+			}
+		}
 
 		chosingPointState = ChosePointState.Standby;
 	}
@@ -117,31 +128,51 @@
 		}
 	}
 	
-	function fromMercatorToWSG84(point: Point, cs: string) {
-		let res_point: Point = point;
-		if (cs != defaultEPSG)
-		{
-			let tmp = L.CRS.EPSG3857.unproject(L.point(point[0], point[1]));
-			res_point = [tmp.lat, tmp.lng];
-		}
-
+	function fromMercatorToWSG84(point: Point) {
+		let res_point: Point;
+		let x = point[0];
+		let y = point[1];
+		x = (x * 180) / 20037508.34;
+		y = (y * 180) / 20037508.34;
+		y = (Math.atan(Math.pow(Math.E, y * (Math.PI / 180))) * 360) / Math.PI - 90;
+		res_point = [x, y];
 		return res_point;
 	}
 
-	function fromWSG84ToMercator(point: Point, cs: string){
-		let res_point: Point = point;
-		if (cs != defaultEPSG)
-		{
-			let tmp = L.CRS.EPSG3857.project(new L.LatLng(point[0], point[1]));
-			res_point = [tmp.x, tmp.y];
-		}
+	function fromWSG84ToMercator(point: Point){
+		let res_point: Point;
+		let x = point[0];
+		let y = point[1];
+		x = (x * 20037508.34) / 180.0;
+		y = Math.log(Math.tan(((90 + y) * Math.PI) / 360)) / (Math.PI / 180);
+		y = (y * 20037508.34) / 180;
+		res_point = [x, y];
 		return res_point;
+	}
+
+	function updatePoints() {
+		if (cs == Mercator) {
+			point1 = fromWSG84ToMercator(point1);
+			point2 = fromWSG84ToMercator(point2);
+		}
+		if (cs == WGS84)
+		{
+			point1 = fromMercatorToWSG84(point1);
+			point2 = fromMercatorToWSG84(point2);
+		}
 	}
 
 	$: if (point1 && point2) {
 		pinLayer.clearLayers()
-		L.marker(fromMercatorToWSG84(point1, cs), { icon: pin }).addTo(pinLayer);
-		L.marker(fromMercatorToWSG84(point2, cs), { icon: pin }).addTo(pinLayer);
+			if (cs == Mercator) {
+				L.marker(fromMercatorToWSG84(point1), { icon: pin }).addTo(pinLayer);
+				L.marker(fromMercatorToWSG84(point2), { icon: pin }).addTo(pinLayer);
+			}
+			if (cs == WGS84)
+			{
+				L.marker(point1, { icon: pin }).addTo(pinLayer);
+				L.marker(point2, { icon: pin }).addTo(pinLayer);
+			}
 	}
 
 	$: if (map && points) {
@@ -150,10 +181,16 @@
 		const polylineOptions: L.PolylineOptions = {
 			color: '#E4E'
 		}
-		console.log(points);
-		points = points.map((value) => fromMercatorToWSG84(value, cs));
-		console.log(points);
+		if (cs == Mercator) {
+			console.log(points);
+			points = points.map((value) => fromMercatorToWSG84(value));
+			console.log(points);
+		}
 		L.polyline(points, polylineOptions).addTo(polyLineLayer);
+	}
+
+	$: if (cs) {
+		updatePoints();
 	}
 	
 </script>

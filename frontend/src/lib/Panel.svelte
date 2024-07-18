@@ -2,7 +2,9 @@
 	import { createEventDispatcher } from "svelte";
 
 	import { ChosePointState } from "./enums";
-	import type { Point } from "./types";
+	import type { Point, AdvancedOption  } from "./types";
+
+	import Combobox from "./Combobox.svelte";
 
 	const dispatch = createEventDispatcher();
 
@@ -10,6 +12,8 @@
 	export let point2: Point;
 	export let chosingPointState: ChosePointState;
 	export let polyCount: number;
+	export let epsg: AdvancedOption[];
+	export let current_epsg: string;
 
 	let hidden = false;
 
@@ -90,6 +94,10 @@
 			</div>
 		</div>
 		<div class="group">
+			<h3>СК</h3>
+			<Combobox bind:value={current_epsg} options={epsg} />
+		</div>
+		<div class="group">
 			<!-- Slider -->
 			<h3>Количество полигонов</h3>
 			<div class="field">
@@ -97,7 +105,7 @@
 				<input type="range" min="1" max="100" bind:value={polyCount} on:change={updatePointsFromInput}>
 			</div>
 		</div>
-		<button class="submit" on:click={update}>Вычислить</button>
+		<button class="submit" on:click={update}>Построить</button>
 	</div>
 </div>
 

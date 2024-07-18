@@ -97,7 +97,7 @@
 				<input type="range" min="1" max="100" bind:value={polyCount} on:change={updatePointsFromInput}>
 			</div>
 		</div>
-		<button class="submit" on:click={update}>🚀 Отправить 🚀</button>
+		<button class="submit" on:click={update}>Вычислить</button>
 	</div>
 </div>
 

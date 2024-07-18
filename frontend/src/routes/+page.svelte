@@ -23,7 +23,7 @@
 </script>
 
 <svelte:head>
-	<title>Я Карта</title>
+	<title>Построение ортодрома</title>
 </svelte:head>
 
 <Map bind:points bind:point1 bind:point2 bind:chosingPointState/>

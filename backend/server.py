@@ -110,7 +110,6 @@ def request_orthodromy() -> str:
         begin = get_normolised_point(point1_s, cs)
         end = get_normolised_point(point2_s, cs)
         orthodromy = Orthodromy(begin, end, count)
-        #"EPSG:3857" "EPSG:4326"
         orthodromy.changeCS("EPSG:4326")
         print(orthodromy_to_linestring(orthodromy))
         orthodromy.changeCS(cs)

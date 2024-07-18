@@ -4,16 +4,12 @@
 	import { ChosePointState } from "./enums";
 	import type { Point, AdvancedOption  } from "./types";
 
-	import Combobox from "./Combobox.svelte";
-
 	const dispatch = createEventDispatcher();
 
 	export let point1: Point;
 	export let point2: Point;
 	export let chosingPointState: ChosePointState;
 	export let polyCount: number;
-	export let epsg: AdvancedOption[];
-	export let current_epsg: string;
 
 	let hidden = false;
 
@@ -92,10 +88,6 @@
 				<span>Долгота</span>
 				<input type="number" min="-180" max="180" bind:value={pointInput2.lng} on:change={updatePointsFromInput}>
 			</div>
-		</div>
-		<div class="group">
-			<h3>СК</h3>
-			<Combobox bind:value={current_epsg} options={epsg} />
 		</div>
 		<div class="group">
 			<!-- Slider -->

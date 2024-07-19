@@ -31,8 +31,33 @@
 	let tileProviders = new Map<string, L.TileLayer>();
 
 	const WGS84 = "EPSG:4326";
-	const sk72 = "EPSG:4284";
+	const sk42 = "EPSG:4284";
 	const Mercator = "EPSG:3857";
+
+	const dx = 23.92;
+	const dy = -141.27;
+	const dz = -80.9;
+
+	const wx = 0;
+	const wy = 0;
+	const wz = 0;
+	const ms = 0;
+
+	const aP = 6378245;
+	const alP = 1 / 298.3;
+	const e2P = 2 * alP - alP ** 2;
+
+	const aW = 6378137;
+	const alW = 1 / 298.257223563;
+	const e2W = 2 * alW - alW ** 2;
+
+	const a = (aP + aW) / 2;
+	const e2 = (e2P + e2W) / 2;
+	const da = aW - aP;
+	const de2 = e2W - e2P;
+
+	const ro = 206264.8062;
+	const Pi = Math.PI;
 
 	function onMapClick(e: LeafletMouseEvent) {
 		if (chosingPointState === ChosePointState.ChosingPoint1) {
@@ -43,6 +68,9 @@
 			if (cs == WGS84) {
 				gpoint1 = point1;
 			}
+			if (cs == sk42) {
+				gpoint1 = fromWSG84ToSK42(point1);
+			}
 		}
 		
 		if (chosingPointState === ChosePointState.ChosingPoint2) {
@@ -52,6 +80,9 @@
 			}
 			if (cs == WGS84) {
 				gpoint2 = point2;
+			}
+			if (cs == sk42) {
+				gpoint2 = fromWSG84ToSK42(point2);
 			}
 		}
 
@@ -131,7 +162,18 @@
 			}
 		}
 	}
-	
+
+	function fromWSG84ToMercator(point: Point) {
+		let res_point: Point;
+		let x = point[0];
+		let y = point[1];
+		x = (x * 20037508.34) / 180.0;
+		y = Math.log(Math.tan(((90 + y) * Math.PI) / 360)) / (Math.PI / 180);
+		y = (y * 20037508.34) / 180;
+		res_point = [x, y];
+		return res_point;
+	}
+
 	function fromMercatorToWSG84(point: Point) {
 		let res_point: Point;
 		let x = point[0];
@@ -143,15 +185,54 @@
 		return res_point;
 	}
 
-	function fromWSG84ToMercator(point: Point){
-		let res_point: Point;
-		let x = point[0];
-		let y = point[1];
-		x = (x * 20037508.34) / 180.0;
-		y = Math.log(Math.tan(((90 + y) * Math.PI) / 360)) / (Math.PI / 180);
-		y = (y * 20037508.34) / 180;
-		res_point = [x, y];
-		return res_point;
+	function fromWSG84ToSK42(point: Point): Point {
+		let latitude = point[0];
+		let longitude = point[1];
+
+		const B = latitude * Pi / 180;
+		const L = longitude * Pi / 180;
+
+		const M = a * (1 - e2) / Math.pow(1 - e2 * Math.sin(B) ** 2, 1.5);
+		const N = a * Math.pow(1 - e2 * Math.sin(B) ** 2, -0.5);
+
+		const dB = ro / (M + 0) * (N / a * e2 * Math.sin(B) * Math.cos(B) * da +
+			(N ** 2 / a ** 2 + 1) * N * Math.sin(B) * Math.cos(B) * de2 / 2 -
+			(dx * Math.cos(L) + dy * Math.sin(L)) * Math.sin(B) + dz * Math.cos(B)) -
+			wx * Math.sin(L) * (1 + e2 * Math.cos(2 * B)) +
+			wy * Math.cos(L) * (1 + e2 * Math.cos(2 * B)) -
+			ro * ms * e2 * Math.sin(B) * Math.cos(B);
+
+		const dL = ro / ((N + 0) * Math.cos(B)) * (-dx * Math.sin(L) + dy * Math.cos(L)) + 
+			wz * (1 + e2 * Math.cos(2 * B)) - 
+			ro * ms * e2 * Math.cos(B) ** 2;
+
+		const newLatitude = latitude - dB / 3600;
+		const newLongitude = longitude - dL / 3600;
+
+		return [newLatitude, newLongitude];
+	}
+
+	function fromSK42ToWSG84(point: Point): Point {
+		const B = point[0] * Pi / 180;
+		const L = point[1] * Pi / 180;
+
+		const M = a * (1 - e2) / Math.pow(1 - e2 * Math.sin(B) ** 2, 1.5);
+		const N = a * Math.pow(1 - e2 * Math.sin(B) ** 2, -0.5);
+
+		const dB = ro / (M + 0) * (N / a * e2 * Math.sin(B) * Math.cos(B) * da
+			+ (N ** 2 / a ** 2 + 1) * N * Math.sin(B) * Math.cos(B) * de2 / 2
+			- (dx * Math.cos(L) + dy * Math.sin(L)) * Math.sin(B) + dz * Math.cos(B))
+			- wx * Math.sin(L) * (1 + e2 * Math.cos(2 * B))
+			+ wy * Math.cos(L) * (1 + e2 * Math.cos(2 * B))
+			- ro * ms * e2 * Math.sin(B) * Math.cos(B);
+
+		const dL = ro / ((N + 0) * Math.cos(B)) * (-dx * Math.sin(L) + dy * Math.cos(L))
+			+ Math.tan(B) * (1 - e2) * (wx * Math.cos(L) + wy * Math.sin(L)) - wz;
+
+		const newLatitude = point[0] + dB / 3600;
+		const newLongitude = point[1] + dL / 3600;
+
+		return [newLatitude, newLongitude];
 	}
 
 	function addLineWithBounds(points: Point[], polylineOptions: L.PolylineOptions, polyLineLayer: L.LayerGroup)
@@ -176,8 +257,14 @@
 
 	$: if (point1 && point2) {
 		pinLayer.clearLayers();
-		L.marker(point1, { icon: pin }).addTo(pinLayer);
-		L.marker(point2, { icon: pin }).addTo(pinLayer);
+		try {
+			L.marker(point1, { icon: pin }).addTo(pinLayer);
+			L.marker(point2, { icon: pin }).addTo(pinLayer);
+		}
+		catch (error)
+		{
+			alert("Возникла критическая ошибка при использовании ск: " + cs);
+		}
 	}
 
 	$: if (map && points) {
@@ -188,6 +275,21 @@
 		}
 
 		addLineWithBounds(points, polylineOptions, polyLineLayer);
+	}
+
+	$: if (cs) {
+		if (cs == Mercator) {
+			gpoint1 = fromWSG84ToMercator(point1);
+			gpoint2 = fromWSG84ToMercator(point2);
+		}
+		if (cs == WGS84) {
+			gpoint1 = point1;
+			gpoint2 = point2;
+		}
+		if (cs == sk42) {
+			gpoint1 = fromSK42ToWSG84(point1);
+			gpoint2 = fromWSG84ToSK42(point2);
+		}
 	}
 	
 </script>

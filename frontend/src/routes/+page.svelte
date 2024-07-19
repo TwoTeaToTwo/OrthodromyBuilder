@@ -24,16 +24,14 @@
 	const update = async () => 
 		points = await requestPoints(point1, point2, polyCount);
 
-	//onMount(update);
-
 	function getEPSG()
 	{
 		let epsg: AdvancedOption[] = [];
 		const WGS84: AdvancedOption = {value: "EPSG:4326", label: "WGS84"};
-		const sk72: AdvancedOption = {value: "EPSG:4284", label: "СК-42"};
+		const sk42: AdvancedOption = {value: "EPSG:4284", label: "СК-42"};
 		const Mercator: AdvancedOption = {value: "EPSG:3857", label: "Mercator"};
 		epsg.push(WGS84);
-		epsg.push(sk72);
+		epsg.push(sk42);
 		epsg.push(Mercator);
 		return epsg;
 	}

@@ -6,8 +6,8 @@
 
 	const dispatch = createEventDispatcher();
 
-	export let point1: Point;
-	export let point2: Point;
+	export let gpoint1: Point;
+	export let gpoint2: Point;
 	export let chosingPointState: ChosePointState;
 	export let polyCount: number;
 
@@ -41,18 +41,18 @@
 	};
 
 	const updatePointsFromInput = () => {
-		point1 = [pointInput1.lat, pointInput1.lng];
-		point2 = [pointInput2.lat, pointInput2.lng];
+		gpoint1 = [pointInput1.lat, pointInput1.lng];
+		gpoint2 = [pointInput2.lat, pointInput2.lng];
 	}
 
 	const updateInputFromPoints = () => {
-		pointInput1.lat = point1[0];
-		pointInput1.lng = point1[1];
-		pointInput2.lat = point2[0];
-		pointInput2.lng = point2[1];
+		pointInput1.lat = gpoint1[0];
+		pointInput1.lng = gpoint1[1];
+		pointInput2.lat = gpoint2[0];
+		pointInput2.lng = gpoint2[1];
 	}
 
-	$: point1, point2, updateInputFromPoints();
+	$: gpoint1, gpoint2, updateInputFromPoints();
 </script>
 
 <!-- class:dark={mapMode === MapMode.Dark || mapMode === MapModes.Satelite} -->

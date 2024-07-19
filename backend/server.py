@@ -1,6 +1,6 @@
 from flask import Flask, request, abort, send_from_directory, Response
 import re
-
+import math
 
 from geography import Point, EPSG, UnknownEPGS, Orthodromy
 
@@ -91,11 +91,18 @@ def get_normolised_point(text: str, cs: str) -> Point:
 
 def orthodromy_to_linestring(orthodromy: Orthodromy) -> str:
     line = "LINESTRING("
-    for point in orthodromy.getPointList():
+    for point in filter(is_point_correct, orthodromy.getPointList()):
         line += "{0} {1},".format(point.getLat(), point.getLng())
     line = line[:-1]
     line += ")"
     return line
+
+
+def is_point_correct(point: Point) -> bool:
+    if math.isfinite(point.getLat()) and math.isfinite(point.getLng()):
+        return True
+    else:
+        return False
 
 
 @app.route(Routes.ORTHODROMY, methods=["GET"])
@@ -110,10 +117,6 @@ def request_orthodromy() -> str:
         begin = get_normolised_point(point1_s, cs)
         end = get_normolised_point(point2_s, cs)
         orthodromy = Orthodromy(begin, end, count)
-        orthodromy.changeCS("EPSG:4326")
-        print(orthodromy_to_linestring(orthodromy))
-        orthodromy.changeCS(cs)
-        print(orthodromy_to_linestring(orthodromy))
         return orthodromy_to_linestring(orthodromy)
     except KeyError:
         abort(400, description="missing args")

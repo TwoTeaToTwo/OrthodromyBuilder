@@ -10,18 +10,6 @@ npm install --global yarn
 ```shell
 yarn
 ```
-### Если возникли трудности после 2го пункта, то попробовать
-3. Установить следущий список пакетов
-```shell
-yarn add vite
-yarn add svelte
-```
-4. В папке frontend проекта
-```shell
-yarn add normalize.css
-yarn add leaflet
-yarn add @types/leaflet
-```
 
 ### Backend
 1. Нужно скачать и установить последнюю версию python3
@@ -41,21 +29,17 @@ yarn build
 python main.py
 ```
 
-p.s может добавлю makefile для быстрого запуска проекта
-
-## Функционал (main)
+## Функционал
 ### Frontend
-Можно вводить координаты двух точек на правой панели, указывать количество полигонов(узлов) для построения ортодрома. На данный момент в main находится стабильная версия реализации только для WGS84.
+Можно вводить координаты двух точек на правой панели, указывать количество полигонов(узлов) для построения ортодрома и систему координат. На данный момент доступны следующие EPSG: 4326, 4284, 3857.
+
 ### Backend
 Реализован весь функционал, создан адаптер для более удобного использования ортодрома.
 
-![Пример работы](https://sun9-23.userapi.com/impg/f5TjzkxciiSxJxMUqum7MzGwMAc0a007UAxd0w/gZukGhehUeU.jpg?size=1920x954&quality=96&sign=a268e7cb72a77566ea291616d13e4939&type=album)
+![Пример работы sk42](https://sun9-24.userapi.com/impg/GmqLl2gawnWqkIQj0cLrFRXv2Ws1t01teWmuXg/r94eDQ-iHow.jpg?size=1907x942&quality=96&sign=2220c8dd4a87dcf051c5554f4a377acd&type=album)
 
-### Функционал (develop)
-### Frontend
-Для Меркатор иногда правильно отображает ортодром на экране, но чаще всего неверно. При вводе координат в этой СК может падать сайт.
-СК-72 в разработке.
-### Backend
-Изменений нет.
+![Пример работы Mercator](https://sun9-43.userapi.com/impg/SYD1sUQcH-mY426cU4whiq698KRbGAq-zev7mg/rPxNgcrczeo.jpg?size=1920x941&quality=96&sign=97c305f0529881a2dd1fb2089cf6e1bb&type=album)
 
-![Пример работы](https://sun9-11.userapi.com/impg/4V-euGhrlruFzSxKfoM01hgoz3O_kHWJzfbu2w/nCZZ95vLEY0.jpg?size=1901x906&quality=96&sign=ba4a02ecf449f66de3117dc8ce2f1072&type=album)
+![Пример работы 1 WGS84](https://sun9-21.userapi.com/impg/OYSY6PUKMEncxn7UaF28LpXoLfqO-q9g4-rw4A/tMOU5oE3rCA.jpg?size=1919x956&quality=96&sign=812f2e1de2a82dab8b99e0f00a1afcb4&type=album)
+
+![Пример работы 2 WGS84](https://sun9-49.userapi.com/impg/A1kGj-MvSDEoqJcFm2nfD3zjcJnoJ3dGhu9MrQ/EXOBz1y5yYE.jpg?size=1915x948&quality=96&sign=c545754b4c593c140e6b0c3a7d349ddf&type=album)

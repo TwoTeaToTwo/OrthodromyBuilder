@@ -12,7 +12,6 @@
 	export let gpoint2: Point;
 	export let points: Point[];
 	export let chosingPointState: ChosePointState;
-	export let cs: string;
 
 	let map: L.Map | null;
 
@@ -291,8 +290,6 @@
 			gpoint2 = fromWSG84ToSK42(point2);
 		}
 	}
-	
-</script>
 
 
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.6.0/dist/leaflet.css"

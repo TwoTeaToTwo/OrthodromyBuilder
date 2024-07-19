@@ -117,7 +117,6 @@ def request_orthodromy() -> str:
         begin = get_normolised_point(point1_s, cs)
         end = get_normolised_point(point2_s, cs)
         orthodromy = Orthodromy(begin, end, count)
-        print(orthodromy_to_linestring(orthodromy))
         return orthodromy_to_linestring(orthodromy)
     except KeyError:
         abort(400, description="missing args")

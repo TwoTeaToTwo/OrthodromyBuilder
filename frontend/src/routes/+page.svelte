@@ -3,7 +3,7 @@
 
 	import { requestPoints } from "$lib/API";
 	import { ChosePointState } from "$lib/enums";
-	import type { Point, AdvancedOption } from "$lib/types";
+	import type { Point} from "$lib/types";
 
 	import Map from "$lib/Map.svelte";
 	import Panel from "$lib/Panel.svelte";
@@ -18,11 +18,9 @@
 	let chosingPointState: ChosePointState = ChosePointState.Standby;
 	let polyCount: number = 10;
 
-	let epsg = getEPSG();
-	let current_epsg = "EPSG:4326";
-
 	const update = async () => 
 		points = await requestPoints(point1, point2, polyCount);
+
 
 	function getEPSG()
 	{
@@ -35,6 +33,7 @@
 		epsg.push(Mercator);
 		return epsg;
 	}
+
 </script>
 
 <svelte:head>

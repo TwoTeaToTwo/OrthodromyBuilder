@@ -12,6 +12,8 @@
 
 	let point1: Point = [55, 37];
 	let point2: Point = [23, -82];
+	let gpoint1: Point = point1;
+	let gpoint2: Point = point2;
 
 	let chosingPointState: ChosePointState = ChosePointState.Standby;
 	let polyCount: number = 10;
@@ -20,7 +22,7 @@
 	let current_epsg = "EPSG:4326";
 
 	const update = async () => 
-		points = await requestPoints(point1, point2, current_epsg, polyCount);
+		points = await requestPoints(point1, point2, polyCount);
 
 	//onMount(update);
 
@@ -41,8 +43,8 @@
 	<title>Построение ортодрома</title>
 </svelte:head>
 
-<Map bind:points bind:point1 bind:point2 bind:chosingPointState bind:cs={current_epsg}/>
-<Panel bind:point1 bind:point2 bind:chosingPointState bind:polyCount {epsg} bind:current_epsg on:update={update}/>
+<Map bind:points bind:point1 bind:point2 bind:chosingPointState bind:cs={current_epsg} bind:gpoint1 bind:gpoint2/>
+<Panel bind:gpoint1 bind:gpoint2 bind:chosingPointState bind:polyCount {epsg} bind:current_epsg on:update={update}/>
 
 <style>
 

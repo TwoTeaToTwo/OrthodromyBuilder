@@ -8,6 +8,8 @@
 
 	export let point1: Point;
 	export let point2: Point;
+	export let gpoint1: Point;
+	export let gpoint2: Point;
 	export let points: Point[];
 	export let chosingPointState: ChosePointState;
 	export let cs: string;
@@ -34,20 +36,22 @@
 
 	function onMapClick(e: LeafletMouseEvent) {
 		if (chosingPointState === ChosePointState.ChosingPoint1) {
+			point1 = [e.latlng.lat, e.latlng.lng];
 			if (cs == Mercator) {
-				point1 = fromWSG84ToMercator([e.latlng.lat, e.latlng.lng]);
+				gpoint1 = fromWSG84ToMercator(point1);
 			}
 			if (cs == WGS84) {
-				point1 = [e.latlng.lat, e.latlng.lng];
+				gpoint1 = point1;
 			}
 		}
 		
 		if (chosingPointState === ChosePointState.ChosingPoint2) {
+			point2 = [e.latlng.lat, e.latlng.lng];
 			if (cs == Mercator) {
-				point2 = fromWSG84ToMercator([e.latlng.lat, e.latlng.lng]);
+				gpoint2 = fromWSG84ToMercator(point2);
 			}
 			if (cs == WGS84) {
-				point2 = [e.latlng.lat, e.latlng.lng];
+				gpoint2 = point2;
 			}
 		}
 
@@ -96,7 +100,7 @@
 			map.attributionControl.setPrefix(false);
 
 			map.setView([0, 0], 1);
-			map.setMaxBounds([[90, 360], [-90, -360]]);
+			map.setMaxBounds([[90, 180], [-90, -180]]);
 
 			map.on("click", onMapClick);
 		}
@@ -150,29 +154,30 @@
 		return res_point;
 	}
 
-	function updatePoints() {
-		if (cs == Mercator) {
-			point1 = fromWSG84ToMercator(point1);
-			point2 = fromWSG84ToMercator(point2);
-		}
-		if (cs == WGS84)
-		{
-			point1 = fromMercatorToWSG84(point1);
-			point2 = fromMercatorToWSG84(point2);
+	function addLineWithBounds(points: Point[], polylineOptions: L.PolylineOptions, polyLineLayer: L.LayerGroup)
+	{
+		const lat_bound = 85;
+		const lng_bound = 180;
+		let prev = points[0];
+		for (let i = 1; i < points.length; i++) {
+			let current_point = points[i];
+			let prev_sign = prev[1] < 0;
+			let sign = current_point[1] < 0;
+			if ((Math.abs(current_point[0]) < lat_bound)
+			 && (Math.abs(current_point[1]) < lng_bound)
+			 && (((Math.abs(current_point[1]) + Math.abs(prev[1])) < (lng_bound * 1.8))
+			 || (prev_sign == sign))) {
+				let line = [prev, current_point];
+				L.polyline(line, polylineOptions).addTo(polyLineLayer);
+			}
+			prev = current_point;
 		}
 	}
 
 	$: if (point1 && point2) {
-		pinLayer.clearLayers()
-			if (cs == Mercator) {
-				L.marker(fromMercatorToWSG84(point1), { icon: pin }).addTo(pinLayer);
-				L.marker(fromMercatorToWSG84(point2), { icon: pin }).addTo(pinLayer);
-			}
-			if (cs == WGS84)
-			{
-				L.marker(point1, { icon: pin }).addTo(pinLayer);
-				L.marker(point2, { icon: pin }).addTo(pinLayer);
-			}
+		pinLayer.clearLayers();
+		L.marker(point1, { icon: pin }).addTo(pinLayer);
+		L.marker(point2, { icon: pin }).addTo(pinLayer);
 	}
 
 	$: if (map && points) {
@@ -181,16 +186,8 @@
 		const polylineOptions: L.PolylineOptions = {
 			color: '#E4E'
 		}
-		if (cs == Mercator) {
-			console.log(points);
-			points = points.map((value) => fromMercatorToWSG84(value));
-			console.log(points);
-		}
-		L.polyline(points, polylineOptions).addTo(polyLineLayer);
-	}
 
-	$: if (cs) {
-		updatePoints();
+		addLineWithBounds(points, polylineOptions, polyLineLayer);
 	}
 	
 </script>

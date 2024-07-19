@@ -287,7 +287,7 @@
 			gpoint2 = point2;
 		}
 		if (cs == sk42) {
-			gpoint1 = fromSK42ToWSG84(point1);
+			gpoint1 = fromWSG84ToSK42(point1);
 			gpoint2 = fromWSG84ToSK42(point2);
 		}
 	}
